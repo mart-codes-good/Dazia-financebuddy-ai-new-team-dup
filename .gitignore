@@ -1,0 +1,41 @@
+# ---------------------------------
+# SECURITY & SECRETS (Never Upload)
+# ---------------------------------
+.env
+.env.local
+.DS_Store
+
+# ---------------------------------
+# DEPENDENCIES (Too Big to Upload)
+# ---------------------------------
+node_modules/
+dist/
+coverage/
+
+# ---------------------------------
+# PROPRIETARY COURSE MATERIAL (Copyright)
+# ---------------------------------
+# Block ALL real textbooks from IFIC / CSC / LLQP
+RAG_FILES/*.pdf
+RAG_FILES/*.PDF
+RAG_FILES/*.txt
+RAG_FILES/*.md
+!RAG_FILES/.gitkeep   # keep empty folder in repo
+
+# ---------------------------------
+# GENERATED QUIZZES
+# ---------------------------------
+quiz-*/
+
+# ---------------------------------
+# VECTOR DATABASE (ChromaDB)
+# ---------------------------------
+chroma_data/
+.chroma/
+*.log
+
+# ---------------------------------
+# OS / EDITOR FILES
+# ---------------------------------
+Thumbs.db
+.vscode/

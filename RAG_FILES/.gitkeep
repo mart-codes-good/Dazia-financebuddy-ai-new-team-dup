@@ -1,0 +1,11 @@
+# RAG Files Directory
+
+Drop your PDF, TXT, or MD files here to use them for quiz generation.
+
+Supported formats:
+- PDF (.pdf)
+- Text (.txt)
+- Markdown (.md)
+
+After adding files, run:
+  node process-rag-files.js
