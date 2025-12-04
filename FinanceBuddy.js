@@ -8,7 +8,7 @@ const path = require('path');
 const { getContext } = require('./retrieve-context');
 
 // Initialize Gemini AI
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY || 'YOUR-GEMINI-API-KEY-HERE';
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY || 'AIzaSyC9cJDmHun36LFDIM76ScMMQNewJrB_7ks';
 const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
 const model = genAI.getGenerativeModel({
     model: 'gemini-2.5-flash',
@@ -175,7 +175,9 @@ Respond with ONLY the JSON array, no other text:`;
 }
 
 async function generateQuizServer(subject, questions) {
-    const serverTemplate = `const express = require('express');
+    const serverTemplate = `
+require('dotenv').config();
+const express = require('express');
 const path = require('path');
 const cors = require('cors');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
@@ -184,7 +186,7 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 
 // Initialize Gemini AI
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY || 'YOUR-GEMINI-API-KEY-HERE';
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY || 'AIzaSyC9cJDmHun36LFDIM76ScMMQNewJrB_7ks';
 const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
 const model = genAI.getGenerativeModel({ 
   model: 'gemini-2.5-flash',
@@ -284,7 +286,7 @@ Answer:\`;
       throw new Error('No response from Gemini API');
     }
 
-    const answer = response.text();
+    const answer = result.response.text();
     
     if (!answer) {
       throw new Error('Empty response from Gemini API');
