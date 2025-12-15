@@ -1,9 +1,8 @@
-```markdown
 # API_DESIGN.md
 
 **FinanceBuddy Backend API Specification**  
 **Version:** 1.0 (Week 4)  
-**Date:** December 2024  
+**Date:** December 14th 2025  
 **Status:** Implementation Ready
 
 ---
@@ -29,10 +28,11 @@ All endpoints use a standardized response structure:
 {
   "success": true,
   "data": {
-    // Endpoint-specific payload
+    "result": "Endpoint-specific payload"
   },
   "meta": {
-    // Optional metadata (course, counts, timestamps)
+    "course": "IFIC",
+    "timestamp": "2024-12-10T15:30:00.000Z"
   }
 }
 ```
@@ -310,9 +310,7 @@ Existing CLI logic should be refactored into reusable services:
 ### ChromaDB Connection Strategy
 
 **Recommendation: Singleton Pattern**
-
 ```javascript
-// services/chromaClient.js
 const { ChromaClient } = require('chromadb');
 
 let client = null;
@@ -371,7 +369,6 @@ module.exports = { getChromaClient };
 ### Error Handling Strategy
 
 **Error Hierarchy:**
-
 ```
 ValidationError (400)
   ├── INVALID_COURSE
@@ -391,13 +388,11 @@ ProcessingError (500)
 
 **Implementation Pattern:**
 ```javascript
-// Middleware: services/errorHandler.js
 function handleError(err, req, res, next) {
   const errorMap = {
     'ValidationError': { status: 400, code: 'INVALID_INPUT' },
     'ChromaDBError': { status: 503, code: 'CHROMADB_DOWN' },
-    'GeminiTimeout': { status: 504, code: 'GEMINI_TIMEOUT' },
-    // ...
+    'GeminiTimeout': { status: 504, code: 'GEMINI_TIMEOUT' }
   };
   
   const mapped = errorMap[err.name] || { status: 500, code: 'INTERNAL_ERROR' };
@@ -418,9 +413,7 @@ function handleError(err, req, res, next) {
 ## Environment Variables
 
 Required configuration:
-
 ```bash
-# .env file
 GEMINI_API_KEY=your-google-gemini-api-key
 CHROMA_URL=http://localhost:8000
 NODE_ENV=development
@@ -504,8 +497,5 @@ This API design provides:
 ---
 
 **Document Version:** 1.0  
-**Last Updated:** December 2024  
+**Last Updated:** December 14th 2025  
 **Author:** Kapil Iyer (FinanceBuddy Lead Developer)
-```
-
----
