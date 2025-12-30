@@ -9,14 +9,14 @@ const ragRetriever = require('./ragRetriever');
  */
 async function generateQuestions(topic, course, count) {
   // Validate inputs
+  if (!Number.isInteger(count) || count < 1 || count > 20) {
+  throw new Error('INVALID_COUNT');
+  }
   if (!['IFIC', 'CSC', 'LLQP'].includes(course)) {
     throw new Error('INVALID_COURSE');
   }
   if (!topic || topic.length < 2 || topic.length > 100) {
     throw new Error('INVALID_TOPIC');
-  }
-  if (count < 1 || count > 20) {
-    throw new Error('INVALID_COUNT');
   }
 
   // Retrieve RAG context

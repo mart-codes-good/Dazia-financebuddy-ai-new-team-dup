@@ -71,8 +71,18 @@ async function getContext(topic, course = 'IFIC', maxChunks = 5) {
       }
     };
   } catch (err) {
-    console.error('❌ RAG error:', err.message);
-    throw new Error('RAG_RETRIEVAL_FAILED');
+    console.warn('⚠️ ChromaDB unavailable, continuing without context');
+
+    return {
+      context: '',
+      metadata: {
+        topic,
+        course,
+        chunksRetrieved: 0,
+        contextLength: 0,
+        warning: 'CHROMA_UNAVAILABLE'
+      }
+    };
   }
 }
 

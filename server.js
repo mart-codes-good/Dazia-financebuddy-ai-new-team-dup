@@ -6,8 +6,9 @@ const ragRetriever = require('./services/ragRetriever');
 const geminiClient = require('./services/geminiClient');
 const questionGenerator = require('./services/questionGenerator');
 const chatbotService = require('./services/chatbotService');
-
-
+const summarizerService = require('./services/summarizerService');
+const topicDiscoveryService = require('./services/topicDiscoveryService');
+const usageTrackerService = require('./services/usageTrackerService');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -22,6 +23,49 @@ app.use((req, res, next) => {
   console.log(`${req.method} ${req.path}`);
   next();
 });
+
+function getUserId(req) {
+  // MVP: accept either header or body
+  // Later: replace with auth/session
+  return req.headers['x-user-id'] || req.body.userId || 'demo_user';
+}
+
+/**
+ * Enforce freemium usage limit BEFORE expensive AI work.
+ * - Blocks at limit
+ * - Charges usage only AFTER success (we do that in the endpoint)
+ */
+function enforceUsageLimit(req, res, next) {
+  try {
+    const userId = getUserId(req);
+    const usage = usageTrackerService.checkUsage(userId);
+
+    if (usage.remaining <= 0) {
+      return res.status(402).json({
+        success: false,
+        error: {
+          code: 'USAGE_LIMIT_REACHED',
+          message: `Free limit of ${usage.limit} uses exceeded`,
+          usage
+        }
+      });
+    }
+
+    // attach for later steps
+    res.locals.userId = userId;
+    res.locals.usageBefore = usage;
+    next();
+  } catch (error) {
+    return res.status(400).json({
+      success: false,
+      error: {
+        code: error.message || 'INVALID_USAGE',
+        message: 'Usage validation failed'
+      }
+    });
+  }
+}
+
 
 // GET /health
 app.get('/health', async (req, res) => {
@@ -58,28 +102,33 @@ app.get('/health', async (req, res) => {
  * Generate Quiz Endpoint
  * POST /api/questions/generate
  */
-app.post('/api/questions/generate', async (req, res) => {
+app.post('/api/questions/generate', enforceUsageLimit, async (req, res) => {
   try {
     const { topic, course, count } = req.body;
     console.log(`📝 Generating quiz: ${course} - ${topic} (${count || 5} questions)`);
 
-    // Call the service
-    const result = await questionGenerator.generateQuestions(topic, course, parseInt(count) || 5);
+    const result = await questionGenerator.generateQuestions(
+      topic,
+      course,
+      parseInt(count) || 5
+    );
 
-    // Return success
+    // Charge usage AFTER success
+    const usage = usageTrackerService.consumeUsage(res.locals.userId, 'quiz');
+
     res.json({
       success: true,
-      data: result
+      data: result,
+      usage
     });
 
   } catch (error) {
     console.error('❌ Quiz generation failed:', error.message);
-    
-    // Map simple error codes
+
     let status = 500;
     if (error.message.includes('INVALID')) status = 400;
     if (error.message.includes('TIMEOUT')) status = 504;
-    
+
     res.status(status).json({
       success: false,
       error: {
@@ -95,27 +144,127 @@ app.post('/api/questions/generate', async (req, res) => {
  * Study-Mode Chatbot Endpoint
  * POST /api/chatbot/ask
  */
-app.post('/api/chatbot/ask', async (req, res) => {
+app.post('/api/chatbot/ask', enforceUsageLimit, async (req, res) => {
   try {
     const { question, course } = req.body;
 
     const result = await chatbotService.askQuestion(question, course);
 
+    const usage = usageTrackerService.consumeUsage(res.locals.userId, 'chat');
+
     res.json({
       success: true,
-      data: result
+      data: result,
+      usage
     });
+
   } catch (error) {
     console.error('❌ Chatbot error:', error.message);
 
     let status = 500;
     if (error.message.includes('INVALID')) status = 400;
+    if (error.message.includes('TIMEOUT')) status = 504;
 
     res.status(status).json({
       success: false,
       error: {
         code: error.message,
         message: 'Failed to answer question'
+      }
+    });
+  }
+});
+
+/**
+ * Content Summarizer Endpoint
+ * POST /api/summarize
+ */
+app.post('/api/summarize', enforceUsageLimit, async (req, res) => {
+  try {
+    const { topic, course, length } = req.body;
+
+    const result = await summarizerService.summarize(topic, course, length);
+
+    const usage = usageTrackerService.consumeUsage(res.locals.userId, 'summarize');
+
+    res.json({
+      success: true,
+      data: result,
+      usage
+    });
+
+  } catch (error) {
+    console.error('❌ Summarize error:', error.message);
+
+    let status = 500;
+    if (error.message.includes('INVALID')) status = 400;
+    if (error.message.includes('TIMEOUT')) status = 504;
+
+    res.status(status).json({
+      success: false,
+      error: {
+        code: error.message,
+        message: 'Failed to summarize topic'
+      }
+    });
+  }
+});
+
+/**
+ * Topic Discovery Endpoint
+ * GET /api/topics
+ */
+app.get('/api/topics', async (req, res) => {
+  try {
+    const course = req.query.course || 'IFIC';
+
+    const topics = await topicDiscoveryService.getTopics(course);
+
+    res.json({
+      success: true,
+      data: {
+        course,
+        topics
+      }
+    });
+  } catch (error) {
+    console.error('❌ Topic discovery error:', error.message);
+
+    res.status(400).json({
+      success: false,
+      error: {
+        code: error.message,
+        message: 'Failed to retrieve topics'
+      }
+    });
+  }
+});
+
+/**
+ * Freemium Usage Tracking Endpoint (Manual / Demo)
+ * POST /api/track-usage
+ *
+ * NOTE:
+ * - Not required for normal app flow anymore
+ * - Useful for demos, testing, and debugging
+ */
+app.post('/api/track-usage', (req, res) => {
+  try {
+    const { userId, action } = req.body;
+
+    const result = usageTrackerService.consumeUsage(userId, action);
+
+    res.json({
+      success: true,
+      data: result
+    });
+
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      error: {
+        code: error.message,
+        message: 'Failed to track usage'
       }
     });
   }
