@@ -1,7 +1,7 @@
 # WordPress Integration Plan
 
 ## Objective
-Embed FinanceBuddy quiz into dazia.ca WordPress site for IFIC, CSC, and LLQP certifications.
+Embed FinanceBuddy quiz into dazia.ca WordPress site for IFIC, CSC, PMP and CAPM certifications.
 
 ## Recommended Approach: Iframe Embedding
 
@@ -60,7 +60,7 @@ Embed FinanceBuddy quiz into dazia.ca WordPress site for IFIC, CSC, and LLQP cer
    - React quiz interface
 
 3. **WordPress Integration**
-   - Create pages: `/ific-quiz`, `/csc-quiz`, `/llqp-quiz`
+   - Create pages: `/ific-quiz`, `/csc-quiz`, `/capm-quiz`, `/pmp-quiz`
    - Add iframe code to each page
    - Test on mobile and desktop
 

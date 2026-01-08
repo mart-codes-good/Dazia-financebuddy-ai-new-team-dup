@@ -1,5 +1,9 @@
 const geminiClient = require('./geminiClient');
 const ragRetriever = require('./ragRetriever');
+const { generateMockSummary } = require('../utils/mockGenerator'); // <--- 1. IMPORT MOCK
+
+// Helper to simulate network latency
+const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 /**
  * Generate a concise summary for a topic using textbook context
@@ -9,12 +13,33 @@ async function summarize(topic, course, length = 'short') {
   if (!topic || topic.length < 2 || topic.length > 200) {
     throw new Error('INVALID_TOPIC');
   }
-  if (!['IFIC', 'CSC', 'LLQP'].includes(course)) {
+  if (!['IFIC', 'CSC', 'CAPM', 'PMP'].includes(course)) {
     throw new Error('INVALID_COURSE');
   }
   if (!['short', 'medium'].includes(length)) {
     throw new Error('INVALID_LENGTH');
   }
+
+  // --- 2. MOCK MODE SWITCH ---
+  if (process.env.MOCK_MODE === 'true') {
+    console.log(`⚠️ MOCK MODE: Summarizing ${topic} (${course})`);
+    
+    // Simulate delay
+    await wait(1500);
+
+    // Get fake data
+    const mockData = generateMockSummary(course, topic);
+
+    // Return exact same shape as real API
+    return {
+      summary: mockData.summary,
+      metadata: {
+        ...mockData.metadata,
+        length // Pass through the length param for consistency
+      }
+    };
+  }
+  // ---------------------------
 
   // Retrieve RAG context
   const { context, metadata } = await ragRetriever.getContext(topic, course);

@@ -9,7 +9,7 @@
 
 ## Overview
 
-This document defines the REST API for FinanceBuddy, an AI-powered exam preparation platform for Canadian financial certifications (IFIC, CSC, LLQP). The API wraps existing RAG and Gemini 2.5 Flash logic into production-ready Express endpoints.
+This document defines the REST API for FinanceBuddy, an AI-powered exam preparation platform for Canadian financial certifications (IFIC, CSC, CAPM, PMP). The API wraps existing RAG and Gemini 2.5 Flash logic into production-ready Express endpoints.
 
 **Design Principles:**
 - Consistent response envelope across all endpoints
@@ -104,7 +104,7 @@ All endpoints use a standardized response structure:
 ```
 
 **Field Validation:**
-- `course`: Required. String. One of: `["IFIC", "CSC", "LLQP"]`
+- `course`: Required. String. One of: `["IFIC", "CSC", "CAPM", "PMP"]`
 - `topic`: Required. String. 2-100 characters.
 - `count`: Required. Integer. Range: 1-20.
 
@@ -199,7 +199,7 @@ All endpoints use a standardized response structure:
 ```
 
 **Field Validation:**
-- `course`: Required. String. One of: `["IFIC", "CSC", "LLQP"]`
+- `course`: Required. String. One of: `["IFIC", "CSC", "CAPM", "PMP"]`
 - `message`: Required. String. 5-500 characters.
 - `history`: Optional. Array. Max 20 turns. Each turn has `role` and `content`.
 
@@ -477,7 +477,7 @@ curl -X POST http://localhost:3000/api/chatbot/ask \
 - Freemium enforcement (Week 5)
 - Request queuing for rate limits
 - Response caching
-- Multi-course support (CSC, LLQP textbooks - Week 5)
+- Multi-course support (CSC, PMP, CAPM textbooks - Week 5)
 - Analytics/logging infrastructure
 
 ---

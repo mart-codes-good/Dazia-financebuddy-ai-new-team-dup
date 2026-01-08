@@ -30,13 +30,29 @@ const CSC_TOPICS = [
   "Working with the Retail Client"
 ];
 
+const CAPM_TOPICS = [
+  "Project Risk Management",
+  "Cost Estimation",
+  "Scheduling Techniques",
+  "Stakeholder Management"
+];
+
+const PMP_TOPICS = [
+  "Life Insurance Basics",
+  "Underwriting",
+  "Policy Provisions",
+  "Ethics and Regulation"
+];
+
 async function getTopics(course) {
-  if (!['IFIC', 'CSC', 'LLQP'].includes(course)) {
+  if (!['IFIC', 'CSC', 'CAPM', 'PMP'].includes(course)) {
     throw new Error('INVALID_COURSE');
   }
 
   if (course === 'IFIC') return IFIC_TOPICS;
   if (course === 'CSC') return CSC_TOPICS;
+  if (course === 'CAPM') return CAPM_TOPICS;
+  if (course === 'PMP') return PMP_TOPICS;
 
   return [];
 }

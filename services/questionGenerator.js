@@ -1,5 +1,9 @@
 const geminiClient = require('./geminiClient');
 const ragRetriever = require('./ragRetriever');
+const { generateMockQuiz } = require('../utils/mockGenerator'); // <--- 1. IMPORT MOCK
+
+// Helper to simulate network latency
+const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 /**
  * Generate quiz questions
@@ -10,14 +14,35 @@ const ragRetriever = require('./ragRetriever');
 async function generateQuestions(topic, course, count) {
   // Validate inputs
   if (!Number.isInteger(count) || count < 1 || count > 20) {
-  throw new Error('INVALID_COUNT');
+    throw new Error('INVALID_COUNT');
   }
-  if (!['IFIC', 'CSC', 'LLQP'].includes(course)) {
+  if (!['IFIC', 'CSC', 'CAPM', 'PMP'].includes(course)) {
     throw new Error('INVALID_COURSE');
   }
   if (!topic || topic.length < 2 || topic.length > 100) {
     throw new Error('INVALID_TOPIC');
   }
+
+  // --- 2. MOCK MODE SWITCH ---
+  if (process.env.MOCK_MODE === 'true') {
+    console.log(`⚠️ MOCK MODE: Generating fake quiz for ${course} - ${topic}`);
+    
+    // Simulate API delay (so you can test your loading spinner)
+    await wait(1500);
+
+    // Get the fake data
+    const mockData = generateMockQuiz(course, topic);
+
+    // Return exact same shape as real API
+    return {
+      questions: mockData.questions, 
+      metadata: {
+        ...mockData.metadata,
+        requestedCount: count
+      }
+    };
+  }
+  // ---------------------------
 
   // Retrieve RAG context
   const { context, metadata } = await ragRetriever.getContext(topic, course);

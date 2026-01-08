@@ -1,0 +1,38 @@
+/* src/index.css */
+
+/* 👇 THE GOLDEN RULE (Crucial for layouts) */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+:root {
+  font-family: 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  
+  /* Reset colors to ensure our theme takes over */
+  color-scheme: light dark;
+  background-color: #0F172A; /* Match theme background */
+  
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  display: block; /* Fixes Vite's forced centering */
+  min-width: 320px;
+  min-height: 100vh;
+  width: 100%;
+}
+
+#root {
+  width: 100%;
+  max-width: 100%; /* Allows full width */
+  margin: 0;
+  padding: 0;
+  text-align: left;
+}

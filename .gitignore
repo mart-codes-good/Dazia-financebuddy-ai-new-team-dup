@@ -15,7 +15,7 @@ coverage/
 # ---------------------------------
 # PROPRIETARY COURSE MATERIAL (Copyright)
 # ---------------------------------
-# Block ALL real textbooks from IFIC / CSC / LLQP
+# Block ALL real textbooks from IFIC / CSC / CAPM / PMP
 RAG_FILES/*.pdf
 RAG_FILES/*.PDF
 RAG_FILES/*.txt
