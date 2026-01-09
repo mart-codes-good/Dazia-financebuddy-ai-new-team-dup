@@ -274,3 +274,64 @@ pre {
   }
 }
 
+/* ========== CUSTOM ADJUSTMENTS ========== */
+
+/* 1. Panel Titles - HEADER ONLY Centered */
+.tool-card h3 {
+  font-size: 38px !important;
+  font-weight: 700 !important;
+  margin: 0 !important;
+}
+
+/* Center the header container (icon + title) */
+.tool-card > div:first-child {
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  padding-bottom: 16px !important;
+  margin-bottom: 20px !important;
+}
+
+/* Force content area to stay left-aligned */
+.tool-card > div:last-child {
+  text-align: left !important;
+}
+
+/* 2. Top Navigation Bar - Bigger Text */
+nav h1,
+nav select,
+nav button,
+nav span,
+nav div {
+  font-size: 30px !important;
+}
+
+nav h1 {
+  font-size: 28px !important;
+}
+
+nav .usage-display,
+nav [style*="Daily Credits"] {
+  font-size: 18px !important;
+}
+```
+
+/* 2. Top Navigation Bar - Bigger Text */
+nav h1,                             /* Logo "FinanceBuddy" */
+nav select,                         /* Course dropdown */
+nav button,                         /* Settings button */
+nav span,                           /* Usage text */
+nav div {                           /* All nav text */
+  font-size: 25px !important;       /* Increase from 16-18px */
+}
+
+/* Logo specifically */
+nav h1 {
+  font-size: 38px !important;       /* Make logo biggest */
+}
+
+/* Usage counter specifically */
+nav .usage-display,
+nav [style*="Daily Credits"] {
+  font-size: 50px !important;
+}

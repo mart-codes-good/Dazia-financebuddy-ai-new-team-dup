@@ -5,12 +5,14 @@ import { useCourse } from '../../context/CourseContext';
 import { generateFlashcards } from '../../api/financeBuddyApi';
 
 /**
- * Flashcards Tool
- * Generate and review study flashcards
+ * Enhanced Flashcards Tool
+ * Yellow question cards, red answer cards, navy background
+ * Generate 1, 3, or 5 cards at a time
  */
 function Flashcards({ onUsageUpdate }) {
   const { course } = useCourse();
   const [topic, setTopic] = useState('');
+  const [count, setCount] = useState(3);              // ← Default 3 cards
   const [cards, setCards] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [flipped, setFlipped] = useState(false);
@@ -27,7 +29,7 @@ function Flashcards({ onUsageUpdate }) {
     setFlipped(false);
 
     try {
-      const data = await generateFlashcards(course, topic, 10);
+      const data = await generateFlashcards(course, topic, count);
       setCards(data.data?.cards || data.cards || []);
 
       if (data.usage && onUsageUpdate) {
@@ -59,71 +61,140 @@ function Flashcards({ onUsageUpdate }) {
     }
   };
 
+  const handleFlip = () => {
+    setFlipped(!flipped);
+  };
+
   const currentCard = cards[currentIndex];
 
   return (
-    <div style={{ height: '100%', display: 'flex', flexDirection: 'column', gap: daziaTheme.spacing.lg }}>
-      {/* Input Section */}
+    <div style={{ 
+      height: '100%', 
+      display: 'flex', 
+      flexDirection: 'column', 
+      gap: daziaTheme.spacing.xl 
+    }}>
+      {/* Input Section - Only show when no cards */}
       {cards.length === 0 && (
         <div>
+          {/* Topic Input */}
           <label
             style={{
               display: 'block',
-              fontSize: daziaTheme.typography.fontSize.sm,
-              fontWeight: daziaTheme.typography.fontWeight.semibold,
-              color: daziaTheme.colors.gray700,
+              fontSize: '18px',
+              fontWeight: 600,
+              color: daziaTheme.colors.primary,        // ← Yellow label
               marginBottom: daziaTheme.spacing.sm,
             }}
           >
             Topic
           </label>
-          <div style={{ display: 'flex', gap: daziaTheme.spacing.md }}>
-            <input
-              type="text"
-              value={topic}
-              onChange={(e) => setTopic(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleGenerate()}
-              placeholder="Enter topic (e.g., 'Mutual Funds')"
-              disabled={loading}
-              style={{
-                flex: 1,
-                padding: daziaTheme.spacing.md,
-                border: `2px solid ${daziaTheme.colors.gray200}`,
-                borderRadius: daziaTheme.borderRadius.md,
-                fontSize: daziaTheme.typography.fontSize.base,
-                outline: 'none',
-              }}
-              onFocus={(e) => (e.target.style.borderColor = daziaTheme.colors.primary)}
-              onBlur={(e) => (e.target.style.borderColor = daziaTheme.colors.gray200)}
-            />
-            <button
-              onClick={handleGenerate}
-              disabled={loading || !topic.trim()}
-              className="button-primary"
-              style={{
-                padding: `${daziaTheme.spacing.md} ${daziaTheme.spacing.xl}`,
-                background: loading ? daziaTheme.colors.gray400 : daziaTheme.colors.primary,
-                color: daziaTheme.colors.white,
-                border: 'none',
-                borderRadius: daziaTheme.borderRadius.md,
-                fontSize: daziaTheme.typography.fontSize.base,
-                fontWeight: daziaTheme.typography.fontWeight.semibold,
-                cursor: loading ? 'not-allowed' : 'pointer',
-              }}
-            >
-              {loading ? 'Generating...' : 'Generate Cards'}
-            </button>
+          <input
+            type="text"
+            value={topic}
+            onChange={(e) => setTopic(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleGenerate()}
+            placeholder="Enter topic (e.g., 'Mutual Funds')"
+            disabled={loading}
+            style={{
+              width: '100%',
+              padding: '16px 20px',
+              border: `2px solid ${daziaTheme.colors.primary}`,
+              borderRadius: daziaTheme.borderRadius.md,
+              fontSize: '18px',
+              outline: 'none',
+              background: 'rgba(255, 255, 255, 0.05)',
+              color: daziaTheme.colors.white,
+              marginBottom: daziaTheme.spacing.lg,
+            }}
+          />
+
+          {/* Card Count Selection */}
+          <label
+            style={{
+              display: 'block',
+              fontSize: '18px',
+              fontWeight: 600,
+              color: daziaTheme.colors.primary,
+              marginBottom: daziaTheme.spacing.sm,
+            }}
+          >
+            Number of Cards
+          </label>
+          <div style={{ 
+            display: 'flex', 
+            gap: daziaTheme.spacing.md,
+            marginBottom: daziaTheme.spacing.lg 
+          }}>
+            {[1, 3, 5].map((num) => (
+              <button
+                key={num}
+                onClick={() => setCount(num)}
+                disabled={loading}
+                style={{
+                  flex: 1,
+                  padding: '16px',
+                  background: count === num 
+                    ? daziaTheme.colors.primary 
+                    : 'rgba(253, 185, 19, 0.1)',
+                  color: count === num 
+                    ? daziaTheme.colors.navy 
+                    : daziaTheme.colors.primary,
+                  border: `2px solid ${daziaTheme.colors.primary}`,
+                  borderRadius: daziaTheme.borderRadius.md,
+                  fontSize: '20px',
+                  fontWeight: 700,
+                  cursor: loading ? 'not-allowed' : 'pointer',
+                  transition: 'all 0.2s ease',
+                }}
+                onMouseOver={(e) => {
+                  if (count !== num && !loading) {
+                    e.currentTarget.style.background = 'rgba(253, 185, 19, 0.2)';
+                  }
+                }}
+                onMouseOut={(e) => {
+                  if (count !== num) {
+                    e.currentTarget.style.background = 'rgba(253, 185, 19, 0.1)';
+                  }
+                }}
+              >
+                {num} {num === 1 ? 'Card' : 'Cards'}
+              </button>
+            ))}
           </div>
 
+          {/* Generate Button */}
+          <button
+            onClick={handleGenerate}
+            disabled={loading || !topic.trim()}
+            className="button-primary"
+            style={{
+              width: '100%',
+              padding: '18px',
+              background: loading ? daziaTheme.colors.gray400 : daziaTheme.colors.primary,
+              color: daziaTheme.colors.navy,
+              border: 'none',
+              borderRadius: daziaTheme.borderRadius.md,
+              fontSize: '20px',
+              fontWeight: 700,
+              cursor: loading ? 'not-allowed' : 'pointer',
+              transition: 'all 0.2s ease',
+            }}
+          >
+            {loading ? '⏳ Generating...' : '✨ Generate Flashcards'}
+          </button>
+
+          {/* Error Display */}
           {error && (
             <div
               style={{
-                marginTop: daziaTheme.spacing.md,
+                marginTop: daziaTheme.spacing.lg,
                 padding: daziaTheme.spacing.md,
                 background: daziaTheme.colors.errorBg,
                 color: daziaTheme.colors.error,
                 borderRadius: daziaTheme.borderRadius.md,
-                fontSize: daziaTheme.typography.fontSize.sm,
+                fontSize: '16px',
+                border: `2px solid ${daziaTheme.colors.error}`,
               }}
             >
               {error}
@@ -134,113 +205,158 @@ function Flashcards({ onUsageUpdate }) {
 
       {/* Flashcard Display */}
       {cards.length > 0 && currentCard && (
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: daziaTheme.spacing.lg }}>
-          {/* Progress */}
+        <div style={{ 
+          flex: 1, 
+          display: 'flex', 
+          flexDirection: 'column', 
+          gap: daziaTheme.spacing.lg 
+        }}>
+          {/* Progress Counter */}
           <div
             style={{
               textAlign: 'center',
-              fontSize: daziaTheme.typography.fontSize.sm,
-              color: daziaTheme.colors.gray600,
+              fontSize: '18px',
+              fontWeight: 600,
+              color: daziaTheme.colors.primary,
             }}
           >
             Card {currentIndex + 1} of {cards.length}
           </div>
 
-          {/* Card */}
+          {/* Flashcard - ENHANCED DESIGN */}
           <div
-            onClick={() => setFlipped(!flipped)}
+            onClick={handleFlip}
+            className={flipped ? 'flashcard-flip' : 'flashcard-enter'}
             style={{
               flex: 1,
-              background: flipped ? daziaTheme.colors.lightYellow : daziaTheme.colors.white,
-              border: `2px solid ${daziaTheme.colors.primary}`,
+              background: flipped 
+                ? daziaTheme.colors.error          // ← RED for answer
+                : daziaTheme.colors.primary,       // ← YELLOW for question
+              border: `3px solid ${flipped ? '#C53030' : '#E5A711'}`,
               borderRadius: daziaTheme.borderRadius.xl,
-              padding: daziaTheme.spacing['3xl'],
+              padding: daziaTheme.spacing['4xl'],
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
               justifyContent: 'center',
               cursor: 'pointer',
               transition: 'all 0.3s ease',
-              boxShadow: daziaTheme.shadows.lg,
-              minHeight: '300px',
+              boxShadow: flipped
+                ? '0 12px 40px rgba(239, 68, 68, 0.4)'
+                : '0 12px 40px rgba(253, 185, 19, 0.4)',
+              minHeight: '350px',
+              position: 'relative',
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.transform = 'scale(1.02)';
-              e.currentTarget.style.boxShadow = daziaTheme.shadows.hoverYellow;
+              e.currentTarget.style.boxShadow = flipped
+                ? '0 16px 48px rgba(239, 68, 68, 0.6)'
+                : '0 16px 48px rgba(253, 185, 19, 0.6)';
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.transform = 'scale(1)';
-              e.currentTarget.style.boxShadow = daziaTheme.shadows.lg;
+              e.currentTarget.style.boxShadow = flipped
+                ? '0 12px 40px rgba(239, 68, 68, 0.4)'
+                : '0 12px 40px rgba(253, 185, 19, 0.4)';
             }}
           >
+            {/* Side Label */}
             <div
               style={{
-                fontSize: daziaTheme.typography.fontSize.xs,
-                fontWeight: daziaTheme.typography.fontWeight.semibold,
-                color: daziaTheme.colors.primary,
+                position: 'absolute',
+                top: daziaTheme.spacing.lg,
+                left: daziaTheme.spacing.lg,
+                fontSize: '14px',
+                fontWeight: 700,
+                color: flipped ? '#FFFFFF' : daziaTheme.colors.navy,
                 textTransform: 'uppercase',
-                letterSpacing: '0.05em',
-                marginBottom: daziaTheme.spacing.lg,
+                letterSpacing: '0.1em',
+                background: flipped 
+                  ? 'rgba(255, 255, 255, 0.2)' 
+                  : 'rgba(0, 0, 0, 0.1)',
+                padding: '8px 16px',
+                borderRadius: daziaTheme.borderRadius.sm,
               }}
             >
-              {flipped ? 'Answer' : 'Question'}
+              {flipped ? '❌ ANSWER' : '❓ QUESTION'}
             </div>
+
+            {/* Card Content */}
             <div
               style={{
-                fontSize: daziaTheme.typography.fontSize.xl,
-                fontWeight: daziaTheme.typography.fontWeight.medium,
-                color: daziaTheme.colors.navy,
+                fontSize: '26px',
+                fontWeight: 600,
+                color: flipped ? daziaTheme.colors.white : daziaTheme.colors.navy,
                 textAlign: 'center',
                 lineHeight: 1.6,
+                maxWidth: '700px',
               }}
             >
               {flipped ? currentCard.back : currentCard.front}
             </div>
+
+            {/* Click Hint */}
             {!flipped && (
               <div
                 style={{
-                  marginTop: daziaTheme.spacing.xl,
-                  fontSize: daziaTheme.typography.fontSize.sm,
-                  color: daziaTheme.colors.gray500,
+                  position: 'absolute',
+                  bottom: daziaTheme.spacing.lg,
+                  fontSize: '16px',
+                  color: 'rgba(0, 0, 0, 0.6)',
+                  fontWeight: 600,
                 }}
               >
-                Click to flip
+                👆 Click to flip
               </div>
             )}
           </div>
 
-          {/* Navigation */}
-          <div style={{ display: 'flex', gap: daziaTheme.spacing.md, justifyContent: 'center' }}>
+          {/* Navigation Buttons */}
+          <div style={{ 
+            display: 'flex', 
+            gap: daziaTheme.spacing.md, 
+            justifyContent: 'center',
+            marginTop: daziaTheme.spacing.lg 
+          }}>
             <button
               onClick={handlePrev}
               disabled={currentIndex === 0}
               style={{
-                padding: `${daziaTheme.spacing.sm} ${daziaTheme.spacing.lg}`,
-                background: currentIndex === 0 ? daziaTheme.colors.gray200 : daziaTheme.colors.white,
-                color: currentIndex === 0 ? daziaTheme.colors.gray400 : daziaTheme.colors.navy,
-                border: `2px solid ${daziaTheme.colors.gray200}`,
+                padding: '14px 32px',
+                background: currentIndex === 0 
+                  ? 'rgba(255, 255, 255, 0.1)' 
+                  : daziaTheme.colors.primary,
+                color: currentIndex === 0 
+                  ? 'rgba(255, 255, 255, 0.3)' 
+                  : daziaTheme.colors.navy,
+                border: `2px solid ${daziaTheme.colors.primary}`,
                 borderRadius: daziaTheme.borderRadius.md,
-                fontSize: daziaTheme.typography.fontSize.base,
-                fontWeight: daziaTheme.typography.fontWeight.semibold,
+                fontSize: '18px',
+                fontWeight: 700,
                 cursor: currentIndex === 0 ? 'not-allowed' : 'pointer',
+                transition: 'all 0.2s ease',
               }}
             >
               ← Previous
             </button>
+
             <button
               onClick={handleNext}
               disabled={currentIndex === cards.length - 1}
               style={{
-                padding: `${daziaTheme.spacing.sm} ${daziaTheme.spacing.lg}`,
-                background:
-                  currentIndex === cards.length - 1 ? daziaTheme.colors.gray200 : daziaTheme.colors.primary,
-                color:
-                  currentIndex === cards.length - 1 ? daziaTheme.colors.gray400 : daziaTheme.colors.white,
-                border: 'none',
+                padding: '14px 32px',
+                background: currentIndex === cards.length - 1 
+                  ? 'rgba(255, 255, 255, 0.1)' 
+                  : daziaTheme.colors.primary,
+                color: currentIndex === cards.length - 1 
+                  ? 'rgba(255, 255, 255, 0.3)' 
+                  : daziaTheme.colors.navy,
+                border: `2px solid ${daziaTheme.colors.primary}`,
                 borderRadius: daziaTheme.borderRadius.md,
-                fontSize: daziaTheme.typography.fontSize.base,
-                fontWeight: daziaTheme.typography.fontWeight.semibold,
+                fontSize: '18px',
+                fontWeight: 700,
                 cursor: currentIndex === cards.length - 1 ? 'not-allowed' : 'pointer',
+                transition: 'all 0.2s ease',
               }}
             >
               Next →
@@ -248,7 +364,7 @@ function Flashcards({ onUsageUpdate }) {
           </div>
 
           {/* Reset Button */}
-          <div style={{ textAlign: 'center' }}>
+          <div style={{ textAlign: 'center', marginTop: daziaTheme.spacing.md }}>
             <button
               onClick={() => {
                 setCards([]);
@@ -257,17 +373,26 @@ function Flashcards({ onUsageUpdate }) {
                 setFlipped(false);
               }}
               style={{
-                padding: `${daziaTheme.spacing.sm} ${daziaTheme.spacing.lg}`,
+                padding: '12px 28px',
                 background: 'transparent',
-                color: daziaTheme.colors.gray600,
-                border: `2px solid ${daziaTheme.colors.gray300}`,
+                color: daziaTheme.colors.primary,
+                border: `2px solid ${daziaTheme.colors.primary}`,
                 borderRadius: daziaTheme.borderRadius.md,
-                fontSize: daziaTheme.typography.fontSize.sm,
-                fontWeight: daziaTheme.typography.fontWeight.medium,
+                fontSize: '16px',
+                fontWeight: 600,
                 cursor: 'pointer',
+                transition: 'all 0.2s ease',
+              }}
+              onMouseOver={(e) => {
+                e.currentTarget.style.background = daziaTheme.colors.primary;
+                e.currentTarget.style.color = daziaTheme.colors.navy;
+              }}
+              onMouseOut={(e) => {
+                e.currentTarget.style.background = 'transparent';
+                e.currentTarget.style.color = daziaTheme.colors.primary;
               }}
             >
-              Generate New Set
+              🔄 Generate New Set
             </button>
           </div>
         </div>

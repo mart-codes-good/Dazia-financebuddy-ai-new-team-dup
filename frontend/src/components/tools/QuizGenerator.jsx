@@ -89,7 +89,7 @@ function QuizGenerator({ onUsageUpdate, onAskAI }) {
            </div>
            <div>
              <h2 style={{ margin: 0, fontSize: "1.5rem", color: "white" }}>Exam Simulation</h2>
-             <p style={{ margin: "4px 0 0", color: "#94a3b8", fontSize: "0.9rem" }}>
+             <p style={{ margin: "4px 0 0", color: "#94a3b8", fontSize: "30px" }}>
                Generate practice questions for <strong>{course}</strong>.
              </p>
            </div>

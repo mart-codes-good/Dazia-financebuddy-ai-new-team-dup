@@ -118,7 +118,7 @@ function ToolCard({
             color: '#020617',
             padding: `${daziaTheme.spacing.sm} ${daziaTheme.spacing.lg}`,
             borderRadius: daziaTheme.borderRadius.full,
-            fontSize: '14px',
+            fontSize: '34px',
             fontWeight: 600,
             whiteSpace: 'nowrap',
             boxShadow: daziaTheme.shadows.md,

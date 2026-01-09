@@ -65,10 +65,10 @@ function Summarizer({ onUsageUpdate, onAskAI }) {
     >
       {/* Header */}
       <div style={{ marginBottom: "24px" }}>
-        <h2 style={{ margin: 0, fontSize: "22px", color: "#E5E7EB" }}>
+        <h2 style={{ margin: 0, fontSize: "40px", color: "#E5E7EB" }}>
           Topic Summarizer
         </h2>
-        <p style={{ marginTop: "6px", color: "#94A3B8", fontSize: "14px" }}>
+        <p style={{ marginTop: "6px", color: "#94A3B8", fontSize: "30px" }}>
           Generate concise cheat-sheets for <strong>{course}</strong> topics.
         </p>
       </div>
@@ -89,7 +89,7 @@ function Summarizer({ onUsageUpdate, onAskAI }) {
       )}
 
       {/* Input Row */}
-      <div style={{ display: "flex", gap: "12px", marginBottom: "24px" }}>
+      <div style={{ display: "flex", gap: "22px", marginBottom: "24px" }}>
         <input
           value={topic}
           onChange={(e) => setTopic(e.target.value)}
@@ -102,7 +102,7 @@ function Summarizer({ onUsageUpdate, onAskAI }) {
             border: "1px solid rgba(255,255,255,0.15)",
             background: "#0F172A",
             color: "#F8FAFC",
-            fontSize: "15px",
+            fontSize: "30px",
             outline: "none"
           }}
         />
@@ -117,7 +117,7 @@ function Summarizer({ onUsageUpdate, onAskAI }) {
             border: "none",
             cursor: loading ? "not-allowed" : "pointer",
             fontWeight: "700",
-            fontSize: "15px"
+            fontSize: "30px"
           }}
         >
           {loading ? "Writing…" : "Summarize"}
