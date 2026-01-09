@@ -31,25 +31,37 @@ const BATCH_SIZE = 10; // Process embeddings in batches
 const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
 
 /**
- * Get all supported files from RAG_FILES directory
+ * Recursively get all supported files from RAG_FILES directory (including subfolders)
+ * @param {string} dir - Directory to scan (defaults to RAG_FILES_DIR)
  * @returns {string[]} Array of file paths
  */
-function getFilesFromDirectory() {
-  const files = [];
+function getFilesFromDirectory(dir = RAG_FILES_DIR) {
+  let files = [];
 
-  if (!fs.existsSync(RAG_FILES_DIR)) {
-    console.error(`❌ Directory ${RAG_FILES_DIR} does not exist!`);
+  if (!fs.existsSync(dir)) {
+    // Only print the "does not exist" error for the root folder to avoid noise
+    if (dir === RAG_FILES_DIR) {
+      console.error(`❌ Directory ${RAG_FILES_DIR} does not exist!`);
+    }
     return files;
   }
 
-  const entries = fs.readdirSync(RAG_FILES_DIR, { withFileTypes: true });
+  const entries = fs.readdirSync(dir, { withFileTypes: true });
 
   for (const entry of entries) {
+    const fullPath = path.join(dir, entry.name);
+
+    if (entry.isDirectory()) {
+      // Recurse into subfolders
+      files = files.concat(getFilesFromDirectory(fullPath));
+      continue;
+    }
+
     if (entry.isFile()) {
       const ext = path.extname(entry.name).toLowerCase();
       // Support PDF, TXT, and MD files
       if (['.pdf', '.txt', '.md'].includes(ext)) {
-        files.push(path.join(RAG_FILES_DIR, entry.name));
+        files.push(fullPath);
       }
     }
   }
@@ -243,7 +255,18 @@ async function processFile(filePath, collection) {
   const filename = path.basename(filePath);
   const fileType = path.extname(filePath).toLowerCase();
 
-  console.log(`\n📄 Processing: ${filename}`);
+  // ✅ NEW: determine course tag based on subfolder name (unify CSC volumes)
+  const folderName = path.basename(path.dirname(filePath)).toLowerCase();
+  let course;
+  if (folderName.includes('csc')) {
+    course = 'CSC';
+  } else if (folderName.includes('ific')) {
+    course = 'IFIC';
+  } else {
+    course = folderName.replace(/\s+/g, '_').toUpperCase();
+  }
+
+  console.log(`\n📄 Processing: ${filename} (course: ${course})`);
 
   const result = {
     filename,
@@ -294,6 +317,7 @@ async function processFile(filePath, collection) {
     const ids = chunks.map((_, index) => `${filename}_chunk_${index}`);
     const metadatas = chunks.map((chunk, index) => ({
       filename,
+      course, // ✅ NEW: add course tag for filtering (CSC vs IFIC)
       file_type: fileType,
       chunk_index: index,
       total_chunks: chunks.length,
@@ -337,18 +361,18 @@ async function main() {
     process.exit(1);
   }
 
-  // Get files to process
+  // Get files to process (now recursive)
   const files = getFilesFromDirectory();
 
   if (files.length === 0) {
     console.log(`\nℹ️  No files found in ${RAG_FILES_DIR}/`);
     console.log('\nSupported formats: .pdf, .txt, .md');
-    console.log(`\nAdd files to ${RAG_FILES_DIR}/ and run this script again.`);
+    console.log(`\nAdd files to ${RAG_FILES_DIR}/ (or subfolders) and run this script again.`);
     process.exit(0);
   }
 
-  console.log(`\n📁 Found ${files.length} file(s) in ${RAG_FILES_DIR}/:`);
-  files.forEach(file => console.log(`   - ${path.basename(file)}`));
+  console.log(`\n📁 Found ${files.length} file(s) in ${RAG_FILES_DIR}/ (including subfolders):`);
+  files.forEach(file => console.log(`   - ${path.relative(RAG_FILES_DIR, file)}`));
 
   // Connect to ChromaDB
   console.log(`\n🔌 Connecting to ChromaDB at ${CHROMA_URL}...`);
