@@ -17,6 +17,8 @@ const PORT = process.env.PORT || 3000;
 const allowedOrigins = [
   'http://localhost:5173',   // Vite dev
   'http://localhost:3000',   // Backup dev
+  'http://127.0.0.1:5173',   // IP Access
+  'http://127.0.0.1:3000',   // IP Access
   'https://dazia.ca',
   'https://www.dazia.ca',
 ];
@@ -47,39 +49,58 @@ app.use((req, res, next) => {
 
 function getUserId(req) {
   // MVP: accept either header or body
-  // Later: replace with auth/session
   return req.headers['x-user-id'] || req.body.userId || 'demo_user';
 }
 
+// ========== USAGE ENFORCEMENT (UPDATED) ==========
+
+// Map endpoints to the specific tool action they consume
+const ENDPOINT_ACTION_MAP = {
+  '/api/questions/generate': 'quiz',
+  '/api/chatbot/ask': 'chat',
+  '/api/summarize': 'summarize',
+  '/api/flashcards/generate': 'flashcards'
+};
+
 /**
  * Enforce freemium usage limit BEFORE expensive AI work.
- * - Blocks at limit
- * - Charges usage only AFTER success
+ * - Detects the tool based on URL
+ * - Blocks only if THAT specific tool's limit is 0
  */
 function enforceUsageLimit(req, res, next) {
   try {
     const userId = getUserId(req);
-    const usage = usageTrackerService.checkUsage(userId);
+    const action = ENDPOINT_ACTION_MAP[req.path];
 
-    if (usage.remaining <= 0) {
-      return res.status(402).json({
-        success: false,
-        error: {
-          code: 'USAGE_LIMIT_REACHED',
-          message: `Free limit of ${usage.limit} uses exceeded`,
-          usage
-        }
-      });
+    // If this endpoint maps to a specific tool, check balance
+    if (action) {
+      const canUse = usageTrackerService.canUse(userId, action);
+      const usage = usageTrackerService.getUsage(userId); // Get latest stats (triggers reset if needed)
+
+      if (!canUse) {
+        console.warn(`⛔ Blocked ${userId} from ${action} (Limit Reached)`);
+        return res.status(402).json({
+          success: false,
+          error: {
+            code: 'USAGE_LIMIT_REACHED',
+            message: `You have reached your free limit for ${action}. Upgrade to continue.`,
+            usage: usage // Send usage so frontend can update UI
+          }
+        });
+      }
+      
+      // Attach usage info for logging/debugging
+      res.locals.usageBefore = usage;
     }
 
     res.locals.userId = userId;
-    res.locals.usageBefore = usage;
     next();
   } catch (error) {
+    console.error('Usage check error:', error);
     return res.status(400).json({
       success: false,
       error: {
-        code: error.message || 'INVALID_USAGE',
+        code: 'INVALID_USAGE',
         message: 'Usage validation failed'
       }
     });
@@ -146,11 +167,13 @@ app.post('/api/questions/generate', enforceUsageLimit, async (req, res) => {
     let status = 500;
     if (error.message.includes('INVALID')) status = 400;
     if (error.message.includes('TIMEOUT')) status = 504;
+    // Catch late usage errors (rare but possible)
+    if (error.message.includes('USAGE_LIMIT')) status = 402;
 
     res.status(status).json({
       success: false,
       error: {
-        code: error.message || 'GENERATION_FAILED',
+        code: error.message.includes('USAGE_LIMIT') ? 'USAGE_LIMIT_REACHED' : 'GENERATION_FAILED',
         message: 'Failed to generate quiz',
         details: process.env.NODE_ENV === 'development' ? error.stack : undefined
       }
@@ -177,8 +200,10 @@ app.post('/api/chatbot/ask', enforceUsageLimit, async (req, res) => {
 
   } catch (error) {
     console.error('❌ Chatbot error:', error.message);
+    let status = 500;
+    if (error.message.includes('USAGE_LIMIT')) status = 402;
 
-    res.status(500).json({
+    res.status(status).json({
       success: false,
       error: {
         code: error.message,
@@ -207,8 +232,10 @@ app.post('/api/summarize', enforceUsageLimit, async (req, res) => {
 
   } catch (error) {
     console.error('❌ Summarize error:', error.message);
+    let status = 500;
+    if (error.message.includes('USAGE_LIMIT')) status = 402;
 
-    res.status(500).json({
+    res.status(status).json({
       success: false,
       error: {
         code: error.message,
@@ -250,6 +277,7 @@ app.post('/api/flashcards/generate', enforceUsageLimit, async (req, res) => {
   try {
     const { topic, course, count } = req.body;
 
+    // Fixed: Keep require inside or move to top (safe to keep here if it works for you)
     const flashcardsService = require('./services/flashcardsService');
     const result = await flashcardsService.generateFlashcards(
       topic,
@@ -266,7 +294,10 @@ app.post('/api/flashcards/generate', enforceUsageLimit, async (req, res) => {
     });
 
   } catch (error) {
-    res.status(500).json({
+    let status = 500;
+    if (error.message.includes('USAGE_LIMIT')) status = 402;
+
+    res.status(status).json({
       success: false,
       error: {
         code: error.message,

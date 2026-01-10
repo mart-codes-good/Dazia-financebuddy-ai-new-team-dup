@@ -15,7 +15,7 @@ coverage/
 # ---------------------------------
 # PROPRIETARY COURSE MATERIAL (Copyright)
 # ---------------------------------
-# Block ALL real textbooks from IFIC / CSC / CAPM / PMP
+# Block ALL real textbooks from IFIC / CSC Vol 1 / CSC Vol 2
 RAG_FILES/*.pdf
 RAG_FILES/*.PDF
 RAG_FILES/*.txt
@@ -38,3 +38,8 @@ quiz-*/
 # ---------------------------------
 Thumbs.db
 .vscode/
+
+# ---------------------------------
+# Runtime / Generated Data
+# ---------------------------------
+data/usage_data.json
