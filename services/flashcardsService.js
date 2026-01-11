@@ -16,7 +16,7 @@ async function generateFlashcards(topic, course, count = 10) {
   if (!Number.isInteger(count) || count < 1 || count > 20) {
     throw new Error('INVALID_COUNT');
   }
-  if (!['IFIC', 'CSC', 'CAPM', 'PMP'].includes(course)) {
+  if (!['IFIC', 'CSC_VOL_1', 'CSC_VOL_2'].includes(course)) {
     throw new Error('INVALID_COURSE');
   }
   if (!topic || topic.length < 2 || topic.length > 100) {

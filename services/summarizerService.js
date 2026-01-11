@@ -13,7 +13,7 @@ async function summarize(topic, course, length = 'short') {
   if (!topic || topic.length < 2 || topic.length > 200) {
     throw new Error('INVALID_TOPIC');
   }
-  if (!['IFIC', 'CSC', 'CAPM', 'PMP'].includes(course)) {
+  if (!['IFIC', 'CSC_VOL_1', 'CSC_VOL_2'].includes(course)) {
     throw new Error('INVALID_COURSE');
   }
   if (!['short', 'medium'].includes(length)) {

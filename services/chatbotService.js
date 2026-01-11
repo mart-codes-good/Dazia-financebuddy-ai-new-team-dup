@@ -7,11 +7,11 @@ const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 async function askQuestion(question, course) {
   // 1. Validation
-  if (!question || question.length < 5 || question.length > 500) {
-    throw new Error('INVALID_QUESTION');
+  if (!question || question.length < 1 || question.length > 500) {
+    throw new Error('INVALID_QUESTION, must be 1-500 characters long');
   }
 
-  if (!['IFIC', 'CSC', 'CAPM', 'PMP'].includes(course)) {
+  if (!['IFIC', 'CSC_VOL_1', 'CSC_VOL_2'].includes(course)) {
     throw new Error('INVALID_COURSE');
   }
 

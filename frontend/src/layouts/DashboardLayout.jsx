@@ -100,9 +100,8 @@ const DashboardLayout = () => {
             >
               {/* ✅ FIX #4: Hardcoded correct certification courses */}
               <option value="IFIC">IFIC (Mutual Funds)</option>
-              <option value="CSC">CSC (Securities)</option>
-              <option value="CAPM">CAPM (Project Mgmt)</option>
-              <option value="PMP">PMP (Professional)</option>
+              <option value="CSC_VOL_1">CSC_VOL_1 (Securities 1)</option>
+              <option value="CSC_VOL_2">CSC_VOL_2 ( Securities 2)</option>
             </select>
             <ChevronDown size={16} style={{ 
               position: "absolute", right: "12px", top: "50%", 
