@@ -45,68 +45,6 @@ function TopNavBar({ currentCourse, usage, onCourseChange, onSettingsClick }) {
         <CourseDropdown current={currentCourse} onChange={onCourseChange} />
       </div>
 
-      {/* Center: Usage Display */}
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: daziaTheme.spacing.md,
-          padding: `${daziaTheme.spacing.sm} ${daziaTheme.spacing.lg}`,
-          background: daziaTheme.colors.lightYellow,
-          borderRadius: daziaTheme.borderRadius.full,
-        }}
-      >
-        <span style={{ fontSize: '20px' }}>💳</span>
-        <div>
-          <div
-            style={{
-              fontSize: daziaTheme.typography.fontSize.xs,
-              color: daziaTheme.colors.gray600,
-              fontWeight: daziaTheme.typography.fontWeight.semibold,
-              textTransform: 'uppercase',
-              letterSpacing: '0.05em',
-            }}
-          >
-            Daily Credits
-          </div>
-          <div
-            style={{
-              fontSize: daziaTheme.typography.fontSize.base,
-              fontWeight: daziaTheme.typography.fontWeight.bold,
-              color: daziaTheme.colors.navy,
-            }}
-          >
-            {usage.used} / {usage.limit}
-          </div>
-        </div>
-
-        {/* Progress Bar */}
-        <div
-          style={{
-            width: '100px',
-            height: '6px',
-            background: daziaTheme.colors.gray200,
-            borderRadius: daziaTheme.borderRadius.full,
-            overflow: 'hidden',
-          }}
-        >
-          <div
-            className="usage-progress"
-            style={{
-              width: `${Math.min((usage.used / usage.limit) * 100, 100)}%`,
-              height: '100%',
-              background:
-                usage.used / usage.limit > 0.85
-                  ? daziaTheme.colors.error
-                  : usage.used / usage.limit > 0.5
-                  ? daziaTheme.colors.warning
-                  : daziaTheme.colors.success,
-              transition: 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
-            }}
-          />
-        </div>
-      </div>
-
       {/* Right: Settings */}
       <button
         onClick={onSettingsClick}

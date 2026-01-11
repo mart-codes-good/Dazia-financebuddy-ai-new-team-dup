@@ -9,7 +9,7 @@ import { generateFlashcards } from '../../api/financeBuddyApi';
  * Yellow question cards, red answer cards, navy background
  * Generate 1, 3, or 5 cards at a time
  */
-function Flashcards({ onUsageUpdate }) {
+function Flashcards({ usage, onUsageUpdate }) { // ✅ Added 'usage' prop
   const { course } = useCourse();
   const [topic, setTopic] = useState('');
   const [count, setCount] = useState(3);              // ← Default 3 cards
@@ -19,8 +19,17 @@ function Flashcards({ onUsageUpdate }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  // ✅ DERIVED STATE: Check global limit
+  const flashcardsLimitReached = usage?.flashcards === 0;
+
   const handleGenerate = async () => {
     if (!topic.trim()) return;
+
+    // ✅ Prevent generation if limit reached
+    if (flashcardsLimitReached) {
+      setError('⚠️ Daily flashcards limit reached. Try again tomorrow!');
+      return;
+    }
 
     setLoading(true);
     setError('');
@@ -32,14 +41,17 @@ function Flashcards({ onUsageUpdate }) {
       const data = await generateFlashcards(course, topic, count);
       setCards(data.data?.cards || data.cards || []);
 
+      // ✅ Update usage on success
       if (data.usage && onUsageUpdate) {
         onUsageUpdate(data.usage);
       }
     } catch (err) {
-      const errorMsg = err.message || 'Failed to generate flashcards';
-      if (errorMsg.toLowerCase().includes('limit') || errorMsg.toLowerCase().includes('exceeded')) {
-        setError('⚠️ ' + errorMsg);
+      // ✅ Handle 402 Limit Reached
+      if (err.status === 402) {
+        if (err.usage && onUsageUpdate) onUsageUpdate(err.usage);
+        setError('⚠️ Daily flashcards limit reached.');
       } else {
+        const errorMsg = err.message || 'Failed to generate flashcards';
         setError(errorMsg);
       }
     } finally {
@@ -77,6 +89,17 @@ function Flashcards({ onUsageUpdate }) {
       {/* Input Section - Only show when no cards */}
       {cards.length === 0 && (
         <div>
+          {/* USAGE INDICATOR (NEW) */}
+          <div style={{ 
+            marginBottom: '15px', 
+            textAlign: 'right', 
+            fontSize: '16px', 
+            fontWeight: '600',
+            color: flashcardsLimitReached ? daziaTheme.colors.error : daziaTheme.colors.primary 
+          }}>
+             Credits: {usage?.flashcards ?? 0} / 20
+          </div>
+
           {/* Topic Input */}
           <label
             style={{
@@ -94,18 +117,19 @@ function Flashcards({ onUsageUpdate }) {
             value={topic}
             onChange={(e) => setTopic(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleGenerate()}
-            placeholder="Enter topic (e.g., 'Mutual Funds')"
-            disabled={loading}
+            placeholder={flashcardsLimitReached ? "Daily limit reached." : "Enter topic (e.g., 'Mutual Funds')"}
+            disabled={loading || flashcardsLimitReached} // ✅ Disable on limit
             style={{
               width: '100%',
               padding: '16px 20px',
-              border: `2px solid ${daziaTheme.colors.primary}`,
+              border: `2px solid ${flashcardsLimitReached ? '#4b5563' : daziaTheme.colors.primary}`,
               borderRadius: daziaTheme.borderRadius.md,
               fontSize: '18px',
               outline: 'none',
-              background: 'rgba(255, 255, 255, 0.05)',
+              background: flashcardsLimitReached ? '#1f2937' : 'rgba(255, 255, 255, 0.05)',
               color: daziaTheme.colors.white,
               marginBottom: daziaTheme.spacing.lg,
+              cursor: flashcardsLimitReached ? 'not-allowed' : 'text'
             }}
           />
 
@@ -130,7 +154,7 @@ function Flashcards({ onUsageUpdate }) {
               <button
                 key={num}
                 onClick={() => setCount(num)}
-                disabled={loading}
+                disabled={loading || flashcardsLimitReached}
                 style={{
                   flex: 1,
                   padding: '16px',
@@ -144,11 +168,12 @@ function Flashcards({ onUsageUpdate }) {
                   borderRadius: daziaTheme.borderRadius.md,
                   fontSize: '20px',
                   fontWeight: 700,
-                  cursor: loading ? 'not-allowed' : 'pointer',
+                  cursor: (loading || flashcardsLimitReached) ? 'not-allowed' : 'pointer',
                   transition: 'all 0.2s ease',
+                  opacity: flashcardsLimitReached ? 0.5 : 1
                 }}
                 onMouseOver={(e) => {
-                  if (count !== num && !loading) {
+                  if (count !== num && !loading && !flashcardsLimitReached) {
                     e.currentTarget.style.background = 'rgba(253, 185, 19, 0.2)';
                   }
                 }}
@@ -166,22 +191,22 @@ function Flashcards({ onUsageUpdate }) {
           {/* Generate Button */}
           <button
             onClick={handleGenerate}
-            disabled={loading || !topic.trim()}
+            disabled={loading || !topic.trim() || flashcardsLimitReached} // ✅ Disable on limit
             className="button-primary"
             style={{
               width: '100%',
               padding: '18px',
-              background: loading ? daziaTheme.colors.gray400 : daziaTheme.colors.primary,
+              background: (loading || flashcardsLimitReached) ? daziaTheme.colors.gray400 : daziaTheme.colors.primary,
               color: daziaTheme.colors.navy,
               border: 'none',
               borderRadius: daziaTheme.borderRadius.md,
               fontSize: '20px',
               fontWeight: 700,
-              cursor: loading ? 'not-allowed' : 'pointer',
+              cursor: (loading || flashcardsLimitReached) ? 'not-allowed' : 'pointer',
               transition: 'all 0.2s ease',
             }}
           >
-            {loading ? '⏳ Generating...' : '✨ Generate Flashcards'}
+            {flashcardsLimitReached ? '❌ Daily Limit Reached' : (loading ? '⏳ Generating...' : '✨ Generate Flashcards')}
           </button>
 
           {/* Error Display */}

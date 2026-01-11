@@ -18,7 +18,14 @@ function DashboardLayoutV2() {
   const { course, setCourse } = useCourse();
   const [expandedTool, setExpandedTool] = useState(null);
   const [chatQuery, setChatQuery] = useState('');
-  const [usage, setUsage] = useState({ used: 0, limit: 20 });
+
+  // ✅ UPDATED: single source of truth for per-tool usage
+  const [usage, setUsage] = useState({
+    quiz: 20,
+    chat: 20,
+    summarize: 20,
+    flashcards: 20,
+  });
 
   const handleAskAI = (query) => {
     setChatQuery(query);
@@ -31,7 +38,7 @@ function DashboardLayoutV2() {
 
   // Calculate grid columns based on expansion
   const getGridColumns = () => {
-    if (!expandedTool) return '1fr 1fr 1fr'; // Equal
+    if (!expandedTool) return '1fr 1fr 1fr';
     if (expandedTool === 'quiz') return '2fr 1fr 1fr';
     if (expandedTool === 'chat') return '1fr 2fr 1fr';
     if (expandedTool === 'summary') return '1fr 1fr 2fr';
@@ -65,7 +72,7 @@ function DashboardLayoutV2() {
           padding: daziaTheme.spacing.lg,
           transition: 'grid-template-columns 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
           overflow: 'hidden',
-          width: '100%'
+          width: '100%',
         }}
       >
         {/* Quiz Panel */}
@@ -77,10 +84,14 @@ function DashboardLayoutV2() {
           onExpand={() => setExpandedTool('quiz')}
           onCollapse={() => setExpandedTool(null)}
         >
-          <QuizGenerator onUsageUpdate={setUsage} onAskAI={handleAskAI} />
+          <QuizGenerator
+            usage={usage}
+            onUsageUpdate={setUsage}
+            onAskAI={handleAskAI}
+          />
         </ToolCard>
 
-        {/* Chat Panel (Prominent) */}
+        {/* Chat Panel */}
         <ToolCard
           tool="chat"
           title="AI Tutor"
@@ -90,7 +101,11 @@ function DashboardLayoutV2() {
           onExpand={() => setExpandedTool('chat')}
           onCollapse={() => setExpandedTool(null)}
         >
-          <Chatbot initialQuery={chatQuery} onUsageUpdate={setUsage} />
+          <Chatbot
+            usage={usage}
+            initialQuery={chatQuery}
+            onUsageUpdate={setUsage}
+          />
         </ToolCard>
 
         {/* Summary Panel */}
@@ -102,12 +117,19 @@ function DashboardLayoutV2() {
           onExpand={() => setExpandedTool('summary')}
           onCollapse={() => setExpandedTool(null)}
         >
-          <Summarizer onUsageUpdate={setUsage} onAskAI={handleAskAI} />
+          <Summarizer
+            usage={usage}
+            onUsageUpdate={setUsage}
+            onAskAI={handleAskAI}
+          />
         </ToolCard>
       </main>
 
       {/* Floating Flashcards Panel */}
-      <FlashcardsFloatingPanel onUsageUpdate={setUsage} />
+      <FlashcardsFloatingPanel
+        usage={usage}
+        onUsageUpdate={setUsage}
+      />
     </div>
   );
 }

@@ -3,7 +3,7 @@ import { getTopics, generateQuiz } from "../../api/financeBuddyApi";
 import { useCourse } from "../../context/CourseContext";
 import { BrainCircuit, CheckCircle2, XCircle, AlertCircle, Play, Sparkles } from 'lucide-react';
 
-function QuizGenerator({ onUsageUpdate, onAskAI }) {
+function QuizGenerator({ usage, onUsageUpdate, onAskAI }) {
   const { course } = useCourse(); 
 
   // ✅ STATE (PRESERVED)
@@ -16,13 +16,16 @@ function QuizGenerator({ onUsageUpdate, onAskAI }) {
   const [answers, setAnswers] = useState({}); 
   const [submitted, setSubmitted] = useState(false);
 
+  // ✅ DERIVED STATE: Check global limit
+  const quizLimitReached = usage?.quiz === 0;
+
   // ✅ LOGIC: Load Topics
   useEffect(() => {
     setSelectedTopic(""); 
     setQuizData(null);
     setSubmitted(false);
     setAnswers({});
-
+    
     getTopics(course)
       .then((data) => {
         const list = data?.data?.topics || data?.topics || [];
@@ -31,22 +34,45 @@ function QuizGenerator({ onUsageUpdate, onAskAI }) {
       .catch((err) => setError("Could not load topics: " + err.message));
   }, [course]);
 
-  // ✅ LOGIC: Generate Quiz
-  const handleGenerate = () => {
+  // ✅ LOGIC: Generate Quiz (UPDATED with Usage Handling)
+  const handleGenerate = async () => {
+    // 1. Check limit before calling API
+    if (quizLimitReached) {
+      setError("⚠️ Daily quiz limit reached. Try again tomorrow.");
+      return;
+    }
+
     setLoading(true);
     setError("");
     setQuizData(null);
     setAnswers({});
     setSubmitted(false);
 
-    generateQuiz(course, selectedTopic, Number(count))
-      .then((data) => {
-        const questions = data?.data?.questions || data?.questions || [];
-        setQuizData(questions);
-        if (data.usage && onUsageUpdate) onUsageUpdate(data.usage);
-      })
-      .catch((err) => setError("⚠️ " + err.message))
-      .finally(() => setLoading(false));
+    try {
+      // 2. Call API
+      const data = await generateQuiz(course, selectedTopic, Number(count));
+      
+      const questions = data?.data?.questions || data?.questions || [];
+      setQuizData(questions);
+      
+      // 3. Update Global Usage on Success
+      if (data.usage && onUsageUpdate) {
+        onUsageUpdate(data.usage);
+      }
+
+    } catch (err) {
+      // 4. Handle 402 (Limit Reached) specifically
+      if (err.status === 402) {
+        if (err.usage && onUsageUpdate) {
+          onUsageUpdate(err.usage); // Lock the UI immediately
+        }
+        setError("⚠️ Daily quiz limit reached.");
+      } else {
+        setError("⚠️ " + err.message);
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   // ✅ LOGIC: Handle Select
@@ -89,7 +115,7 @@ function QuizGenerator({ onUsageUpdate, onAskAI }) {
            </div>
            <div>
              <h2 style={{ margin: 0, fontSize: "1.5rem", color: "white" }}>Exam Simulation</h2>
-             <p style={{ margin: "4px 0 0", color: "#94a3b8", fontSize: "30px" }}>
+             <p style={{ margin: "4px 0 0", color: "#94a3b8", fontSize: "0.9rem" }}>
                Generate practice questions for <strong>{course}</strong>.
              </p>
            </div>
@@ -140,21 +166,30 @@ function QuizGenerator({ onUsageUpdate, onAskAI }) {
             </select>
           </div>
 
+          {/* UPDATE: Button handles disabled state and text changes */}
           <button
             onClick={handleGenerate}
-            disabled={loading || !selectedTopic}
+            disabled={loading || !selectedTopic || quizLimitReached}
             style={{
               padding: "14px 24px",
-              background: loading ? "#334155" : "#38bdf8",
-              color: loading ? "#94a3b8" : "#0f172a",
+              background: quizLimitReached ? "#475569" : (loading ? "#334155" : "#38bdf8"),
+              color: quizLimitReached ? "#94a3b8" : (loading ? "#94a3b8" : "#0f172a"),
               border: "none", borderRadius: "12px", fontWeight: "600",
-              cursor: loading ? "not-allowed" : "pointer",
+              cursor: (loading || quizLimitReached) ? "not-allowed" : "pointer",
               display: "flex", alignItems: "center", gap: "8px",
               transition: "all 0.2s"
             }}
           >
-            {loading ? "Generating..." : <><Play size={18} fill="#0f172a" /> Start Quiz</>}
+            {quizLimitReached 
+              ? "Limit Reached" 
+              : (loading ? "Generating..." : <><Play size={18} fill="#0f172a" /> Start Quiz</>)
+            }
           </button>
+        </div>
+
+        {/* NEW: Usage Indicator */}
+        <div style={{ marginTop: "15px", fontSize: '0.85rem', color: "#64748b", textAlign: "right" }}>
+          Daily Credits: <strong style={{ color: quizLimitReached ? "#ef4444" : "#38bdf8" }}>{usage?.quiz ?? 0}</strong> / 20
         </div>
       </div>
 

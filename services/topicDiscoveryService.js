@@ -1,78 +1,87 @@
 /**
  * Topic Discovery Service
  * Returns official syllabus topics for supported courses.
- * MVP approach: static lists for clean, demo-ready UX.
+ * Static lists for clean, demo-ready UX.
  */
 
+/* =======================
+   IFIC – Investment Funds in Canada
+   ======================= */
 const IFIC_TOPICS = [
-  "Role of the mutual fund representative",
-  "Regulation, SROs, and ethics",
-  "Client discovery and risk profiling",
-  "Time value of money and inflation",
-  "Investment products overview",
-  "Mutual fund structure, pricing, and fees",
-  "Types of mutual funds",
-  "Portfolio construction with mutual funds",
-  "Taxation of mutual funds",
-  "Registered plans using mutual funds",
-  "Suitability, disclosure, and complaints"
+  "The role of the mutual fund sales representative",
+  "Overview of the Canadian financial marketplace",
+  "Economic principles",
+  "Getting to know the client",
+  "Behavioural finance",
+  "Tax and retirement planning",
+  "Types of investment products and how they are traded",
+  "Constructing investment portfolios",
+  "Understanding financial statements",
+  "The modern mutual fund",
+  "Conservative mutual fund products",
+  "Riskier mutual fund products",
+  "Alternative managed products",
+  "Understanding mutual fund performance",
+  "Selecting a mutual fund",
+  "Mutual fund fees and services",
+  "Mutual fund dealer regulation",
+  "Applying ethical standards"
 ];
 
-const CSC_TOPICS = [
-  "Canadian financial system and regulators",
-  "Securities markets and trading mechanics",
-  "Debt securities and money markets",
-  "Equities and equity strategies",
-  "Derivatives and structured products",
-  "Pooled investments and managed products",
-  "Financial statements and corporate analysis",
-  "Portfolio theory and asset allocation",
-  "Taxation of investments in Canada",
-  "Registered plans and retirement planning",
-  "KYC, suitability, and ethics",
-  "Compliance and client management"
+/* =======================
+   CSC – Volume 1
+   ======================= */
+const CSC_VOL_1_TOPICS = [
+  "The Canadian securities industry",
+  "The capital market",
+  "The Canadian regulatory environment",
+  "Overview of economics",
+  "Economic policy",
+  "Fixed-income securities: features and types",
+  "Fixed-income securities: pricing and trading",
+  "Equity securities: common and preferred shares",
+  "Equity securities: equity transactions",
+  "Derivatives",
+  "Corporations and their financial statements",
+  "Financing and listing securities"
 ];
 
-const CAPM_TOPICS = [
-  "Project management environment and terminology",
-  "Project roles and stakeholders",
-  "Project life cycle and integration",
-  "Scope and requirements management",
-  "Schedule management and critical path",
-  "Cost management and earned value",
-  "Quality management concepts",
-  "Resource and team management",
-  "Communication and stakeholder engagement",
-  "Risk management",
-  "Procurement basics",
-  "Agile and hybrid approaches"
+/* =======================
+   CSC – Volume 2
+   ======================= */
+const CSC_VOL_2_TOPICS = [
+  "Fundamental and technical analysis",
+  "Company analysis",
+  "Introduction to the portfolio approach",
+  "The portfolio management process",
+  "Mutual funds: structure and regulation",
+  "Mutual funds: types and features",
+  "Exchange-traded funds",
+  "Other managed products",
+  "Structured products",
+  "Canadian taxation",
+  "Fee-based accounts",
+  "Working with the retail client",
+  "Working with the institutional client"
 ];
 
-const PMP_TOPICS = [
-  "Project management principles",
-  "Performance domains",
-  "Business value and benefits management",
-  "Project planning across scope, schedule, and cost",
-  "Resource and stakeholder engagement",
-  "Risk, procurement, and change control",
-  "Project execution and leadership",
-  "Monitoring and controlling performance",
-  "Project closing and knowledge transfer",
-  "Agile and hybrid delivery approaches",
-  "Governance and PMOs"
-];
-
+/* =======================
+   Dispatcher
+   ======================= */
 async function getTopics(course) {
-  if (!['IFIC', 'CSC', 'CAPM', 'PMP'].includes(course)) {
-    throw new Error('INVALID_COURSE');
+  switch (course) {
+    case "IFIC":
+      return IFIC_TOPICS;
+
+    case "CSC_VOL_1":
+      return CSC_VOL_1_TOPICS;
+
+    case "CSC_VOL_2":
+      return CSC_VOL_2_TOPICS;
+
+    default:
+      throw new Error("INVALID_COURSE");
   }
-
-  if (course === 'IFIC') return IFIC_TOPICS;
-  if (course === 'CSC') return CSC_TOPICS;
-  if (course === 'CAPM') return CAPM_TOPICS;
-  if (course === 'PMP') return PMP_TOPICS;
-
-  return [];
 }
 
 module.exports = { getTopics };

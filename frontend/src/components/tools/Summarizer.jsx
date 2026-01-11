@@ -1,18 +1,26 @@
-// src/components/Summarizer.jsx
+// src/components/tools/Summarizer.jsx
 import { useState } from "react";
 import { useCourse } from "../../context/CourseContext";
 import { generateSummary } from "../../api/financeBuddyApi";
-import { theme } from "../../theme";
 
-function Summarizer({ onUsageUpdate, onAskAI }) {
+function Summarizer({ usage, onUsageUpdate, onAskAI }) { // ✅ Added usage prop
   const { course } = useCourse();
   const [topic, setTopic] = useState("");
   const [summary, setSummary] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  // ✅ DERIVED STATE: Check global limit
+  const summarizeLimitReached = usage?.summarize === 0;
+
   const handleGenerate = async () => {
     if (!topic.trim()) return;
+
+    // ✅ Prevent generation if limit reached
+    if (summarizeLimitReached) {
+      setError("⚠️ Daily summary limit reached. Try again tomorrow!");
+      return;
+    }
 
     setLoading(true);
     setError("");
@@ -25,24 +33,24 @@ function Summarizer({ onUsageUpdate, onAskAI }) {
 
       setSummary(summaryText);
 
+      // ✅ Update usage on success
       if (data.usage && onUsageUpdate) {
         onUsageUpdate(data.usage);
       }
     } catch (err) {
       console.error(err);
-  
-      // Use the actual error message from backend
-      const errorMsg = err.message || "Unknown error";
-  
-      // Customize based on content
-      if (errorMsg.toLowerCase().includes('limit') || 
-          errorMsg.toLowerCase().includes('exceeded')) {
-        setError(errorMsg);  // Shows: "⚠️ Free limit of 20 uses exceeded"
+
+      // ✅ Handle 402 Limit Reached
+      if (err.status === 402) {
+        if (err.usage && onUsageUpdate) onUsageUpdate(err.usage);
+        setError("⚠️ Daily summary limit reached.");
       } else {
-        setError(errorMsg);  // Shows actual backend error
+        // Use the actual error message from backend
+        const errorMsg = err.message || "Unknown error";
+        setError(errorMsg);
       }
     } finally {
-  setLoading(false);
+      setLoading(false);
     }
   };
 
@@ -65,9 +73,15 @@ function Summarizer({ onUsageUpdate, onAskAI }) {
     >
       {/* Header */}
       <div style={{ marginBottom: "24px" }}>
-        <h2 style={{ margin: 0, fontSize: "40px", color: "#E5E7EB" }}>
-          Topic Summarizer
-        </h2>
+        <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'start'}}>
+            <h2 style={{ margin: 0, fontSize: "40px", color: "#E5E7EB" }}>
+              Topic Summarizer
+            </h2>
+            {/* ✅ USAGE INDICATOR */}
+            <div style={{ fontSize: "16px", fontWeight: "600", color: summarizeLimitReached ? "#EF4444" : "#38BDF8" }}>
+                Credits: {usage?.summarize ?? 0} / 20
+            </div>
+        </div>
         <p style={{ marginTop: "6px", color: "#94A3B8", fontSize: "30px" }}>
           Generate concise cheat-sheets for <strong>{course}</strong> topics.
         </p>
@@ -84,7 +98,7 @@ function Summarizer({ onUsageUpdate, onAskAI }) {
             border: "1px solid rgba(239, 68, 68, 0.4)"
           }}
         >
-          ⚠️ {error}
+          {error}
         </div>
       )}
 
@@ -93,34 +107,36 @@ function Summarizer({ onUsageUpdate, onAskAI }) {
         <input
           value={topic}
           onChange={(e) => setTopic(e.target.value)}
-          placeholder={`Enter topic (e.g. "Mutual Funds", "KYC")`}
+          placeholder={summarizeLimitReached ? "Daily limit reached." : `Enter topic (e.g. "Mutual Funds", "KYC")`}
           onKeyDown={(e) => e.key === "Enter" && handleGenerate()}
+          disabled={loading || summarizeLimitReached} // ✅ Disabled state
           style={{
             flex: 1,
             padding: "14px 16px",
             borderRadius: "12px",
-            border: "1px solid rgba(255,255,255,0.15)",
-            background: "#0F172A",
-            color: "#F8FAFC",
+            border: summarizeLimitReached ? "1px solid #475569" : "1px solid rgba(255,255,255,0.15)",
+            background: summarizeLimitReached ? "#1e293b" : "#0F172A",
+            color: summarizeLimitReached ? "#94a3b8" : "#F8FAFC",
             fontSize: "30px",
-            outline: "none"
+            outline: "none",
+            cursor: summarizeLimitReached ? "not-allowed" : "text"
           }}
         />
         <button
           onClick={handleGenerate}
-          disabled={loading || !topic}
+          disabled={loading || !topic || summarizeLimitReached} // ✅ Disabled state
           style={{
             padding: "0 28px",
             borderRadius: "12px",
-            background: loading ? "#64748B" : "#38BDF8",
+            background: (loading || summarizeLimitReached) ? "#64748B" : "#38BDF8",
             color: "#0F172A",
             border: "none",
-            cursor: loading ? "not-allowed" : "pointer",
+            cursor: (loading || summarizeLimitReached) ? "not-allowed" : "pointer",
             fontWeight: "700",
             fontSize: "30px"
           }}
         >
-          {loading ? "Writing…" : "Summarize"}
+          {summarizeLimitReached ? "Limit Reached" : (loading ? "Writing…" : "Summarize")}
         </button>
       </div>
 
@@ -155,14 +171,15 @@ function Summarizer({ onUsageUpdate, onAskAI }) {
                 (hint) => (
                   <span
                     key={hint}
-                    onClick={() => setTopic(hint)}
+                    onClick={() => !summarizeLimitReached && setTopic(hint)}
                     style={{
                       padding: "6px 14px",
                       borderRadius: "999px",
                       fontSize: "13px",
-                      cursor: "pointer",
+                      cursor: summarizeLimitReached ? "not-allowed" : "pointer",
                       background: "#020617",
-                      border: "1px solid rgba(255,255,255,0.15)"
+                      border: "1px solid rgba(255,255,255,0.15)",
+                      opacity: summarizeLimitReached ? 0.5 : 1
                     }}
                   >
                     {hint}
