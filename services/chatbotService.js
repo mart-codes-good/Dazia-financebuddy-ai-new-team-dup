@@ -69,7 +69,7 @@ ${contextBlock}
   // 7. Return result
   return {
     answer,
-    sources: context && context.trim().length > 0 ? ['IFIC Textbook'] : [],
+    sources: context && context.trim().length > 0 ? ['${course} Textbook'] : [],
     metadata
   };
 }
