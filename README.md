@@ -80,6 +80,7 @@ Developed in collaboration with **Dazia Consulting**.
 | POST | `/api/summarize` | Topic summary |
 | POST | `/api/flashcards/generate` | Flashcards |
 | POST | `/api/track-usage` | Freemium tracking |
+| POST | `/api/dev/reset-usage` | Dev Reset Usage |
 
 ---
 
@@ -104,6 +105,69 @@ Mock mode enables:
 Mock responses follow real API schemas and can optionally decrement usage.
 
 Keep MOCK MODE = true in .env file for dev mode to test without running in API rate limit.
+
+---
+## Dev-Only Usage Reset Endpoint (Testing Utility)
+
+For development and testing purposes, the backend exposes a **dev-only endpoint**
+that allows manual resetting of freemium usage limits.
+
+This endpoint is **strictly disabled in production** and exists only to support
+local testing, demos, and development workflows.
+
+### Endpoint
+
+POST /api/dev/reset-usage
+
+### Behavior
+
+- Resets usage counters for:
+  - a specific user (if `userId` is provided), or
+  - all users (if no `userId` is provided)
+- Does **not** bypass or modify usage limits
+- After reset, the standard per-tool limit (20 uses/day) is enforced again
+
+### Security Controls
+
+This endpoint is protected by **two backend-only checks**:
+
+- `NODE_ENV` must be set to `development`
+- `DEV_RESET_ENABLED` must be set to `"true"`
+
+If either condition is not met, the endpoint always returns **403 Forbidden**.
+
+### Example Usage (PowerShell)
+
+```powershell
+Invoke-RestMethod `
+  -Uri http://localhost:3000/api/dev/reset-usage `
+  -Method POST `
+  -ContentType "application/json" `
+  -Body '{"userId":"demo_user"}'
+```
+Reset All Users (Dev Only)
+powershell
+Copy code
+Invoke-RestMethod `
+  -Uri http://localhost:3000/api/dev/reset-usage `
+  -Method POST
+Related Configuration (.env)
+env
+Copy code
+# Enable dev-only usage reset endpoint
+DEV_RESET_ENABLED=true
+NODE_ENV=development
+Setting DEV_RESET_ENABLED=false (or removing it) fully disables the reset
+endpoint without requiring any code changes.
+
+Design Rationale
+Usage limits are enforced exclusively by the backend
+
+Frontend and environment variables cannot mutate usage state
+
+Reset functionality is treated as an admin / developer-only operation
+
+This mirrors real production freemium and billing architectures
 
 ---
 
