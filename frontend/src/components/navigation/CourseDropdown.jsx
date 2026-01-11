@@ -9,9 +9,8 @@ import { daziaTheme } from '../../styles/daziaTheme';
 function CourseDropdown({ current, onChange }) {
   const courses = [
     { id: 'IFIC', label: '📊 IFIC', fullName: 'Investment Funds' },
-    { id: 'CSC', label: '💼 CSC', fullName: 'Canadian Securities' },
-    { id: 'CAPM', label: '📋 CAPM', fullName: 'Project Management' },
-    { id: 'PMP', label: '🎯 PMP', fullName: 'PM Professional' },
+    { id: 'CSC_VOL_1', label: '💼 CSC 1', fullName: 'Canadian Securities Vol 1' },
+    { id: 'CSC_VOL_2', label: '🎯 CSC 2', fullName: 'Canadian Securities Vol 2' }
   ];
 
   const currentCourse = courses.find((c) => c.id === current);

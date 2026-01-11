@@ -6,15 +6,23 @@ import { Send, Bot, AlertCircle, Loader2 } from 'lucide-react';
 function Chatbot({ usage, onUsageUpdate, initialQuery }) { // ✅ Added 'usage' prop
   const { course } = useCourse();
   
-  const [messages, setMessages] = useState([
-    { role: "bot", text: `Hello! I am your ${course} AI Tutor. Ask me anything!` }
-  ]);
+  const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef(null);
 
   // ✅ DERIVED STATE: Check global limit
   const chatLimitReached = usage?.chat === 0;
+
+  // ✅ RESET GREETING WHEN COURSE CHANGES
+  useEffect(() => {
+    setMessages([
+      {
+        role: "bot",
+        text: `Hello! I am your ${course} AI Tutor. Ask me anything!`
+      }
+    ]);
+  }, [course]);
 
   useEffect(() => {
     if (initialQuery) {

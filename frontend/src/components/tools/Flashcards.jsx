@@ -150,7 +150,7 @@ function Flashcards({ usage, onUsageUpdate }) { // ✅ Added 'usage' prop
             gap: daziaTheme.spacing.md,
             marginBottom: daziaTheme.spacing.lg 
           }}>
-            {[1, 3, 5].map((num) => (
+            {[1, 3, 5, 10].map((num) => (
               <button
                 key={num}
                 onClick={() => setCount(num)}

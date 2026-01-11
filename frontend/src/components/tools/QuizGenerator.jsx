@@ -163,6 +163,7 @@ function QuizGenerator({ usage, onUsageUpdate, onAskAI }) {
               <option value="1">1 Question</option>
               <option value="3">3 Questions</option>
               <option value="5">5 Questions</option>
+              <option value="10">10 Questions</option>
             </select>
           </div>
 

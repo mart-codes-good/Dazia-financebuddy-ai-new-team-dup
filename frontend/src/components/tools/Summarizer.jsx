@@ -60,7 +60,7 @@ function Summarizer({ usage, onUsageUpdate, onAskAI }) { // ✅ Added usage prop
       style={{
         flex: 1,
         height: "100%",
-        width: "100%",
+        width: "92%",
         display: "flex",
         flexDirection: "column",
         background: "rgba(30, 41, 59, 0.35)",

@@ -1,18 +1,11 @@
 /* src/index.css */
-
-/* 👇 THE GOLDEN RULE (Crucial for layouts) */
-*, *::before, *::after {
-  box-sizing: border-box;
-}
-
 :root {
   font-family: 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
-  
-  /* Reset colors to ensure our theme takes over */
+
   color-scheme: light dark;
-  background-color: #0F172A; /* Match theme background */
+  background-color: #0F172A; /* Matches your navy theme */
   
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -23,16 +16,19 @@
 body {
   margin: 0;
   padding: 0;
-  display: block; /* Fixes Vite's forced centering */
-  min-width: 320px;
+  display: block;
+  min-width: 100vw;
   min-height: 100vh;
   width: 100%;
+  
+  /* 👇 THIS IS THE KEY FIX */
+  /* This shrinks the UI to 55% size, mimicking the "zoom out" you liked */
+  zoom: 0.50; 
 }
 
 #root {
   width: 100%;
-  max-width: 100%; /* Allows full width */
+  max-width: 100%;
   margin: 0;
   padding: 0;
-  text-align: left;
 }

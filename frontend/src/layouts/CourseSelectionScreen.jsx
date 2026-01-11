@@ -18,28 +18,20 @@ function CourseSelectionScreen({ onCourseSelect }) {
       description: 'Master mutual funds and investment principles',
     },
     {
-      id: 'CSC',
+      id: 'CSC_VOL_1',
       icon: '💼',
-      title: 'CSC',
-      subtitle: 'Canadian Securities Course',
+      title: 'CSC 1',
+      subtitle: 'Canadian Securities Vol 1',
       color: '#3B82F6', // Blue
-      description: 'Comprehensive securities and finance education',
+      description: 'Comprehensive securities and finance education Part 1',
     },
     {
-      id: 'CAPM',
-      icon: '📋',
-      title: 'CAPM',
-      subtitle: 'Certified Associate in Project Management',
-      color: '#F59E0B', // Orange
-      description: 'Essential project management skills',
-    },
-    {
-      id: 'PMP',
+      id: 'CSC_VOL_2',
       icon: '🎯',
-      title: 'PMP',
-      subtitle: 'Project Management Professional',
-      color: '#8B5CF6', // Purple
-      description: 'Advanced project management certification',
+      title: 'CSC 2',
+      subtitle: 'Canadian Securities Vol 2',
+      color: '#F59E0B', // Orange
+      description: 'Comprehensive securities and finance education Part 1',
     },
   ];
 

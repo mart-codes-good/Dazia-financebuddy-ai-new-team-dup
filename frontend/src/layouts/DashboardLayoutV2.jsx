@@ -48,7 +48,7 @@ function DashboardLayoutV2() {
   return (
     <div
       style={{
-        height: '100vh',
+        height: '200vh',
         display: 'flex',
         flexDirection: 'column',
         background: daziaTheme.colors.paleYellow,
