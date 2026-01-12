@@ -93,7 +93,7 @@ Key architectural decisions:
 - Usage tracking and enforcement  
 
 ### Freemium Logic
-- Each user gets **20 AI actions per day**
+- Each user gets **20 AI actions for each service per day**
 - Actions tracked via `x-user-id` header
 - When the limit is reached:
   - Backend returns HTTP `402`
@@ -288,6 +288,8 @@ GEMINI_API_KEY=your_api_key_here
 CHROMA_URL=http://localhost:8000
 PORT=3000
 MOCK_MODE=false
+NODE_ENV=development
+DEV_RESET_ENABLED=false
 ```
 
 ---
@@ -298,7 +300,7 @@ These were consciously deferred due to scope and time:
 
 * Cloud deployment (Render / Railway / Heroku)
 * WordPress authentication integration
-* Paid subscription enforcement
+* Paid subscription enforcement UI
 * Multi-turn chat memory
 * Mobile app packaging
 
@@ -314,15 +316,15 @@ If you are the next Riipen student:
 * Deploy frontend (Vercel / Netlify)
 * Integrate WordPress gatekeeper and reorganise dazia website
 * Replace `x-user-id` with real authentication
-* Enable paid plans based on Tutor_Bot_Research_Report.md (payment plan) and paid plan frontend UI screen after usage
-* Expand analytics and monitoring and create mobile app version (web view app recommended for first prototype)
+* Enable paid plans based on Tutor_Bot_Research_Report.md (payment plan) and paid plan frontend UI screen after usage after discussing with employer on appropriate payment plans for fair share of profit and accessibility.
+* Expand analytics and monitoring and create mobile app version (web view app recommended for first prototype) or use React + Native
 
 ---
 
 ## 13. Ownership & Permissions
 
 * Repository is **public**
-* **No collaborators** have write access
+* **No collaborators** have write access other than Kapil Iyer
 * External users:
 
   * ❌ Cannot push to `main`
