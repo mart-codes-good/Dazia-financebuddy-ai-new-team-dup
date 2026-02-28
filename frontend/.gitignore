@@ -26,3 +26,7 @@ dist-ssr
 # Avoid getting env variables like api key getting burned
 .env
 .env.*
+
+# DO NOT TRACK Chroma DB to avoid bloat 
+chroma_data/
+*.sqlite3
