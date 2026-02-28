@@ -22,3 +22,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Avoid getting env variables like api key getting burned
+.env
+.env.*

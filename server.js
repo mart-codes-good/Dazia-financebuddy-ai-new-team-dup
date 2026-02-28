@@ -222,9 +222,13 @@ app.post('/api/questions/generate', enforceUsageLimit, async (req, res) => {
  */
 app.post('/api/chatbot/ask', enforceUsageLimit, async (req, res) => {
   try {
-    const { question, course } = req.body;
+    const { question, course, chatId: bodyChatId } = req.body;
 
-    const result = await chatbotService.askQuestion(question, course);
+    const userId = getUserId(req);
+    const chatId = req.body.chatId || `${userId}:${course}`; //Fallback if front end doesn't give an id
+
+    const result = await chatbotService.askQuestion(userId, chatId, question, course); 
+    
     const usage = usageTrackerService.consumeUsage(res.locals.userId, 'chat');
 
     res.json({
